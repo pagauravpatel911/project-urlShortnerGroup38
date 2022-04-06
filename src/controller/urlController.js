@@ -51,6 +51,16 @@ const createUrl = async function (req, res) {
             shortUrl,
             urlCode
         }
+
+
+        let longUrlExist = await urlModel.findOne({longUrl:longUrl}).select({ longUrl: 1, shortUrl: 1, urlCode: 1, _id: 0 })
+
+
+        if(longUrlExist){
+            return res.status(201).send({ status: true, msg: longUrlExist})
+        }
+
+
         let savedData = await urlModel.create(data)
         let response = await urlModel.findOne({ _id: savedData._id }).select({ longUrl: 1, shortUrl: 1, urlCode: 1, _id: 0 })
         return res.status(201).send({ status: true, msg: response })
@@ -71,19 +81,20 @@ module.exports.createUrl = createUrl
 
 const getUrl = async function (req, res) {
     try {
-        let urlCode = req.params.urlCode
-        if (!urlCode) return res.status(400).send({ status: false, msg: "urlCode should be present" })
+        let urlCode = req.params
+        
 
         if (isValidBody(req.body)) return res.status(400).send({ status: false, msg: "body must not be present" })
         if (isValidBody(req.query)) return res.status(400).send({ status: false, msg: "invalid parameters" })
-
-        let url = await urlModel.findOne({ urlCode: urlCode }).select({ longUrl: 1, _id: 0 })
+          
+        let url = await urlModel.findOne(urlCode)
+        
         if (!url) {
             return res.status(400).send({ status: false, msg: "urlcode does not exist" })
+        }else{
+
+       return res.status(302).redirect(url.longUrl)
         }
-
-        return res.status(200).send({ status: true, original_url: url })
-
     } catch (err) {
         console.log("This is error :", err.message)
         return res.status(500).send({ msg: "Error", error: err.message })
