@@ -3,13 +3,15 @@ const shortid = require("shortid");
 const validUrl = require("valid-url");
 const redis = require("redis");
 
+
 const { promisify } = require("util");
+
 
 //Connect to redis
 
 const redisClient = redis.createClient(
-  16368,
-  "redis-16368.c15.us-east-1-2.ec2.cloud.redislabs.com",
+  16368,     /// port number to cread
+  "redis-16368.c15.us-east-1-2.ec2.cloud.redislabs.com",  // End Points
   { no_ready_check: true }
 );
 redisClient.auth("Y52LH5DG1XbiVCkNC2G65MvOFswvQCRQ", function (err) {
@@ -17,7 +19,7 @@ redisClient.auth("Y52LH5DG1XbiVCkNC2G65MvOFswvQCRQ", function (err) {
 });
 
 redisClient.on("connect", async function () {
-  console.log("Connected to Redis..");
+  console.log("Connected to Redis..");   
 });
 
 //1. connect to the server
@@ -51,7 +53,7 @@ const createUrl = async function (req, res) {
     if(cahcedLongUrl){
       let copy = JSON.parse(cahcedLongUrl)
       console.log("from Chache")
-      return res.status(200).send({status:false,data:copy})
+      return res.status(200).send({status:true,data:copy})
     }
 
     if (!isValidBody(body)) {
@@ -125,7 +127,7 @@ const getUrl = async function (req, res) {
   try {
     let { urlCode } = req.params;
 
-    if (!shortid.isValid(urlCode)) {
+    if (!validUrl.isValid(urlCode)) {
       res.status(400).send({ status: false, msg: "this is not a valid url" });
     }
 
